@@ -11,10 +11,10 @@ function install_jmeter_plugins() {
 }
 
 function install_java() {
-    echo "Updating apt-get..."
-    sudo apt-get -qqy update
-    echo "Installing java..."
-    sudo DEBIAN_FRONTEND=noninteractive apt-get -qqy install openjdk-7-jre
+    echo "Installing java 8..."
+    sudo yum install java-1.8.0-openjdk -y
+    echo "Removic java 7..."
+    sudo yum remove java-1.7.0-openjdk -y
     echo "Java installed"
 }
 
@@ -52,10 +52,13 @@ JMETER_VERSION=$1
 cd ~
 
 # Java
-if java -version 2>&1 >/dev/null | grep -q "java version" ; then
-    echo "Java is already installed"
-else
+JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
+JAVA_VERSION_NORMALIZED=$(echo "$JAVA_VERSION" | awk -F. '{printf("%02d%02d",$1,$2);}')
+if [[ "$JAVA_VERSION_NORMALIZED" < "0108" ]]; then
+    echo "Java is not installed or version too old. Version: $JAVA_VERSION"
     install_java
+else
+    echo "Correct Java is already installed. Version: $JAVA_VERSION"
 fi
 
 # JMeter
